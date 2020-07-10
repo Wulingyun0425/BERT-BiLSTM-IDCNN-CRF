@@ -59,11 +59,13 @@ BERT-BiLSTM-IDCNN-CRF的Keras版实现
 
 # 依赖
 
+```
 python >= 3.5
 keras = 2.2.4
 tensorflow = 1.14.0
 keras-contrib = 2.0.8
 bert-as-service
+```
 
 # 致谢及参考
 
