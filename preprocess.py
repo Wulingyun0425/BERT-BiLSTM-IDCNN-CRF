@@ -130,40 +130,7 @@ def load_bert_repre():
     x = bc.encode(train[10000:15000], is_tokenized=True)
     x = x[:, 1:para["max_len"] + 1]
     np.save("./rmrb/train_x_3", x)
-    print("save 15000")
-
-    bc = BertClient()
-    x = bc.encode(train[15000:], is_tokenized=True)
-    x = x[:, 1:para["max_len"] + 1]
-    np.save("./rmrb/train_x_4", x)
     print("save all")
-
-    # step = int(train.__len__() / 256) + 1
-    # for i in range(step):
-    #     if i != step - 1:
-    #         x = bc.encode(train[i * 256:(i + 1) * 256], is_tokenized=True)
-    #         x = x[:, 1:para["max_len"] + 1]
-    #         train_x[i * 256:((i + 1) * 256)] = x
-    #         # print(train_x[i*256:(i+1)*256])
-    #     else:
-    #         x = bc.encode(train[i * 256:], is_tokenized=True)
-    #         x = x[:, 1:para["max_len"] + 1]
-    #         train_x[i * 256:] = x
-    #         # print(train_x[i*256:])
-    #
-    # step = int(test.__len__() / 256) + 1
-    # # print(step)
-    # for i in range(step):
-    #     if i != step - 1:
-    #         x = bc.encode(test[i * 256:(i + 1) * 256], is_tokenized=True)
-    #         x = x[:, 1:para["max_len"] + 1]
-    #         test_x[i * 256:((i + 1) * 256)] = x
-    #         print(test_x[i * 256:(i + 1) * 256])
-    #     else:
-    #         x = bc.encode(test[i * 256:], is_tokenized=True)
-    #         x = x[:, 1:para["max_len"] + 1]
-    #         test_x[i * 256:] = x
-    #         # print(test_x[i * 256:])
     return None  # train_x, test_x
 
 
@@ -214,7 +181,7 @@ def _parse_data(file_input, sep="\t"):
             sent = []
     new_sents = []
     for sent in sents:
-        if len(sent) <= 128:
+        if 44 <= len(sent) <= 128:
             new_sents.append(sent)
         else:
             n += 1

@@ -56,16 +56,6 @@ def originHandle2():
                 else:
                     for wor in word:
                         outp.write(wor + '\tO\n')
-                # if tag == 'nr' or tag == 'ns' or tag == 'nt':
-                #     outp.write(word[0] + " B_" + map[tag] + " ")
-                #     for j in word[1:len(word) - 1]:
-                #         if j != ' ':
-                #             outp.write(j + " M_" + map[tag] + " ")
-                #     outp.write(word[-1] + " E_" + map[tag] + " ")
-                # else:
-                #     for wor in word:
-                #         outp.write(wor + ' O ')
-
                 i += 1
             outp.write('\n')
 

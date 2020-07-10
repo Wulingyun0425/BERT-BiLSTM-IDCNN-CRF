@@ -1,21 +1,68 @@
 import numpy
 from keras import Model
-from keras.layers import Bidirectional, LSTM, \
-    Conv1D
-from keras.layers import Input
+from keras.layers import *
 from keras_contrib.layers import CRF
-from keras.layers.core import *
+from keras_trans_mask import RemoveMask, RestoreMask
 
-def BERT_MODEL_bak(para):
+
+def BERT_MODEL(para):
     # for key in para:
     #     print key,para[key]
     bert_input = Input(shape=(para["max_len"], 768,), dtype='float32', name='bert_input')
     # mask = Masking().compute_mask(bert_input)
     mask = Masking()(bert_input)
     repre = Dropout(para["char_dropout"])(mask)
-    repre = Dense(300, activation="relu")(repre)
+    repre = Dense(200, activation="relu")(repre)
     repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(repre)
-    repre = Conv1D(256, 3, activation="relu")(repre)
+    removed_mask = RemoveMask()(repre)
+    # nndata = Conv1D(128, 3, padding='same', strides=1, activation='relu')(removed_mask)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(removed_mask)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    restored_mask = RestoreMask()([nndata, repre])
+    # restored_mask = Dropout(para["cnn_dropout"])(restored_mask)
+    crf = CRF(para["tag_num"], sparse_target=True)
+    crf_output = crf(restored_mask)
+    model = Model(input=bert_input, output=crf_output)
+    model.summary()
+    # adam_0 = keras.optimizers.Adam(lr=0.05, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    model.compile("adam", loss=crf.loss_function, metrics=[crf.accuracy])
+    return model
+
+
+def BERT_MODEL_1(para):
+    # for key in para:
+    #     print key,para[key]
+    bert_input = Input(shape=(para["max_len"], 768,), dtype='float32', name='bert_input')
+    # mask = Masking().compute_mask(bert_input)
+    mask = Masking()(bert_input)
+    repre = Dropout(para["char_dropout"])(mask)
+    repre = Dense(200, activation="relu")(repre)
+    removed_mask = RemoveMask()(repre)
+    nndata = Conv1D(128, 3, padding='same', strides=1, activation='relu')(removed_mask)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    restored_mask = RestoreMask()([nndata, repre])
+    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(restored_mask)
     crf = CRF(para["tag_num"], sparse_target=True)
     crf_output = crf(repre)
     model = Model(input=bert_input, output=crf_output)
@@ -24,17 +71,15 @@ def BERT_MODEL_bak(para):
     model.compile("adam", loss=crf.loss_function, metrics=[crf.accuracy])
     return model
 
-def BERT_MODEL(para):
+
+def BERT_MODEL_bak(para):
     # for key in para:
     #     print key,para[key]
     bert_input = Input(shape=(para["max_len"], 768,), dtype='float32', name='bert_input')
-    mask = Masking().compute_mask(bert_input)
-    # mask = Masking()(bert_input)
-    repre = Dropout(para["char_dropout"])(bert_input)
+    mask = Masking()(bert_input)
+    repre = Dropout(para["char_dropout"])(mask)
     repre = Dense(300, activation="relu")(repre)
-    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(repre, mask=mask)
-    repre = Conv1D(256, 3, padding='same', activation="relu")(repre)
-    repre = Dropout(para["cnn_dropout"])(repre)
+    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(repre)
     crf = CRF(para["tag_num"], sparse_target=True)
     crf_output = crf(repre)
     model = Model(input=bert_input, output=crf_output)
