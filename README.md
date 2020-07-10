@@ -1,5 +1,8 @@
 # BERT-BiLSTM-IDCNN-CRF
+
 BERT-BiLSTM-IDCNN-CRF的Keras版实现
+
+学习用，仍然存在很多问题。
 
 ## BERT配置
 
