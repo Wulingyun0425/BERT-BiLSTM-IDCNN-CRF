@@ -46,7 +46,7 @@ BERT-BiLSTM-IDCNN-CRF的Keras版实现
 5. 训练：执行train.py
 6. 评估：执行test.py
 
-# todo
+## todo
 
 1. 数据处理存在问题
 
@@ -57,7 +57,7 @@ BERT-BiLSTM-IDCNN-CRF的Keras版实现
 
 3. 模型无法保证这种结构和超参数下可以达到最佳效果，需要更多测试
 
-# 依赖
+## 依赖
 
 ```
 python >= 3.5
@@ -67,7 +67,7 @@ keras-contrib = 2.0.8
 bert-as-service
 ```
 
-# 致谢及参考
+## 致谢及参考
 
 https://github.com/AidenHuen/BERT-BiLSTM-CRF
 
