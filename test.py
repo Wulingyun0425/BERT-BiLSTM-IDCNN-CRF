@@ -80,6 +80,7 @@ def pos_F1(y_pred, y):
     c = 0
     true = 0
     pos = 0
+    P, R, F = 0, 0, -1
     for i in range(len(y)):
         start = 0
         for j in range(len(y[i])):
