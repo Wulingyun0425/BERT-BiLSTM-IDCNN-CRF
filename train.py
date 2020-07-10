@@ -45,7 +45,7 @@ class EvaluateCallback(Callback):
         pred_y = self.model.predict(self.validation_data[0])
         pred_y, val_y_1 = predict_bert(pred_y)
         P, R, F = pos_F1(pred_y, val_y_1)
-        print("epoch:\t" + str(epoch))
+        print("epoch:\t" + str(epoch + 1))
         print("P:\t" + str(P))
         print("R:\t" + str(R))
         print("F1:\t" + str(F))
