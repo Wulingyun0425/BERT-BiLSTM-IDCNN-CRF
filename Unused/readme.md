@@ -26,15 +26,25 @@ utils.py: 数据处理相关
 ## constants.py
 
 bert_model_dir: bert目录，例如`data/bert`
+
 vocab_file: bert词表文件，例如`data/bert/vocab.txt`
+
 train_file: 训练集，例如`data/train.txt`
+
 dev_file: 测试集，例如`data/test.txt`
+
 model_path: 载入已有模型参数文件，指定文件名，例如`data/idcnn_lstm_1.pkl`
+
 save_model_dir: 模型保存文件路径及文件名前缀，例如`data/idcnn_lstm_`
+
 max_length: 最大句子长度
+
 batch_size: batch大小
+
 epochs: 训练轮数
+
 tagset_size: 标签数目
+
 use_cuda: 是否使用cude
 
 ## 运行
