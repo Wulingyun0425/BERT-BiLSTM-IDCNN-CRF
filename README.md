@@ -65,12 +65,16 @@ keras = 2.2.4
 tensorflow = 1.14.0
 keras-contrib = 2.0.8
 bert-as-service
+keras_layer_normalization
+keras_trans_mask
 ```
 
 ## 致谢及参考
 
 https://github.com/AidenHuen/BERT-BiLSTM-CRF
 
-https://pypi.org/project/keras-trans-mask/
+https://github.com/CyberZHG/keras-layer-normalization
+
+https://github.com/CyberZHG/keras-trans-mask
 
 

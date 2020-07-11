@@ -3,6 +3,17 @@ from keras import Model
 from keras.layers import *
 from keras_contrib.layers import CRF
 from keras_trans_mask import RemoveMask, RestoreMask
+from keras.optimizers import Adam
+# from tensorflow.keras.layers import LayerNormalization
+from keras_layer_normalization import LayerNormalization
+
+
+def Att(att_dim,inputs,name):
+    V = inputs
+    QK = Dense(att_dim,bias=None)(inputs)
+    QK = Activation("softmax",name=name)(QK)
+    MV = Multiply()([V, QK])
+    return(MV)
 
 
 def BERT_MODEL(para):
@@ -39,32 +50,142 @@ def BERT_MODEL(para):
     return model
 
 
-def BERT_MODEL_1(para):
-    # for key in para:
-    #     print key,para[key]
+def BERT_MODEL_bilstm_idcnn(para):
     bert_input = Input(shape=(para["max_len"], 768,), dtype='float32', name='bert_input')
     # mask = Masking().compute_mask(bert_input)
     mask = Masking()(bert_input)
     repre = Dropout(para["char_dropout"])(mask)
     repre = Dense(200, activation="relu")(repre)
+    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(repre)
+    # IDCNN
     removed_mask = RemoveMask()(repre)
-    nndata = Conv1D(128, 3, padding='same', strides=1, activation='relu')(removed_mask)
+    nndata = Conv1D(256, 3, padding='same', strides=1, activation='relu')(removed_mask)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
     nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
     restored_mask = RestoreMask()([nndata, repre])
-    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(restored_mask)
+    # CRF
+    restored_mask = Dense(para["tag_num"], activation="relu")(restored_mask)
     crf = CRF(para["tag_num"], sparse_target=True)
-    crf_output = crf(repre)
+    crf_output = crf(restored_mask)
+    model = Model(input=bert_input, output=crf_output)
+    model.summary()
+    adam = Adam(lr=0.05, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    model.compile(optimizer=adam, loss=crf.loss_function, metrics=[crf.accuracy])
+    return model
+
+
+def BERT_MODEL_attention_test(para):
+# def BERT_MODEL_attention(para):
+    bert_input = Input(shape=(para["max_len"], 768,), dtype='float32', name='bert_input')
+    # mask = Masking().compute_mask(bert_input)
+    mask = Masking()(bert_input)
+    repre = Dropout(para["char_dropout"])(mask)
+    repre = Dense(200, activation="relu")(repre)
+    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(repre)
+    atts1 = Att(400, repre, "attention_vec")
+    x = Dense(64)(atts1)
+    atts2 = Att(64, x, "attention_vec1")
+
+    # IDCNN
+    # removed_mask = RemoveMask()(repre)
+    # nndata = Conv1D(256, 3, padding='same', strides=1, activation='relu')(removed_mask)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    # nndata = LayerNormalization()(nndata)
+    # restored_mask = RestoreMask()([nndata, repre])
+    # CRF
+    dense_out = Dense(para["tag_num"], activation="relu")(atts2)
+    crf = CRF(para["tag_num"], sparse_target=True)
+    crf_output = crf(dense_out)
+    model = Model(input=bert_input, output=crf_output)
+    model.summary()
+    adam = Adam(lr=0.05, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    model.compile(optimizer=adam, loss=crf.loss_function, metrics=[crf.accuracy])
+    return model
+
+
+def BERT_MODEL_1(para):
+    bert_input = Input(shape=(para["max_len"], 768,), dtype='float32', name='bert_input')
+    # mask = Masking().compute_mask(bert_input)
+    mask = Masking()(bert_input)
+    repre = Dropout(para["char_dropout"])(mask)
+    repre = Dense(200, activation="relu")(repre)
+    repre = Bidirectional(LSTM(para["lstm_unit"], return_sequences=True, dropout=para["rnn_dropout"]))(repre)
+    # IDCNN
+    removed_mask = RemoveMask()(repre)
+    nndata = Conv1D(256, 3, padding='same', strides=1, activation='relu')(removed_mask)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu')(nndata)
+    nndata = LayerNormalization()(nndata)
+    nndata = Conv1D(64, 3, padding='same', strides=1, activation='relu', dilation_rate=2)(nndata)
+    nndata = LayerNormalization()(nndata)
+    restored_mask = RestoreMask()([nndata, repre])
+    # CRF
+    restored_mask = Dense(para["tag_num"], activation="relu")(restored_mask)
+    crf = CRF(para["tag_num"], sparse_target=True)
+    crf_output = crf(restored_mask)
     model = Model(input=bert_input, output=crf_output)
     model.summary()
     # adam_0 = keras.optimizers.Adam(lr=0.05, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
